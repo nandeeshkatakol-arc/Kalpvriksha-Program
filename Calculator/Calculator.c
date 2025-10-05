@@ -1,150 +1,162 @@
-#include<stdio.h>
-#include<ctype.h>
-#include<string.h>
-#include<stdlib.h>
-int evaluate(char *expression, int *error);
-int operation(int a,int b,char op,int *error);
-char *skip_spaces(char *p);
-int precedence(char op);
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+
+int evaluateExpression(char *expression, int *errorFlagFlag);
+int operation(int operand1, int operand2, char operator, int *errorFlag);
+char *skip_spaces(char *ptr);
+int precedence(char operator);
+int valiadateExpression(char *expression);
+
 int main()
 {
     char expression[100];
     int valid = 1;
-    printf("Enter the expression:");
-    fgets(expression,sizeof(expression),stdin);
+
+    printf("Enter the expression: ");
+    fgets(expression, sizeof(expression), stdin);
+
     
-    //to check whether valid expression or not
-    for(int i=0; expression[i]!='\0';i++)
-    {
-        char c=expression[i];
-        if(!(isdigit(c) || c=='+'|| c=='-'|| c=='*' || c=='/' || isspace(c)))
-        {
-            valid = 0;
-            break;
+    valid = valiadateExpression(expression);
 
-        }
-    }
-
-    if(!valid)
+    if (!valid)
     {
         printf("Invalid expression\n");
         return 0;
     }
 
+    int errorFlag = 0;
+    int result = evaluateExpression(expression, &errorFlag);
 
-    int error=0;
-    int result=evaluate(expression,&error);
-    if(error==1)
+    if (errorFlag == 1)
     {
-        printf("Error: Invalid Expression\n");
-
+        printf("error: Invalid Expression\n");
     }
-
-    else if(error==2)
+    else if (errorFlag == 2)
     {
-        printf("Error: Division by Zero\n");
+        printf("error: Division by Zero\n");
     }
-
-    else{
-        printf("Result: %d\n",result);
+    else
+    {
+        printf("Result: %d\n", result);
     }
 
     return 0;
 }
 
-int evaluate(char *expression, int *error)
+int valiadateExpression(char *expression)
 {
-    int numstack[100],numTop=-1;
-    char opstack[100],opTop=-1;
-    char *p=expression;
-    p=skip_spaces(p);
-
-    while(*p)
+    for (int i = 0; expression[i] != '\0'; i++)
     {
-        if(isdigit(*p)) //if digit
+        char c = expression[i];
+        if (!(isdigit(c) || c == '+' || c == '-' || c == '*' || c == '/' || isspace(c)))
         {
-            int num=strtol(p,&p,10);
-            numstack[++numTop]=num;
+            return 0; 
         }
+    }
+    return 1; 
+}
 
-        else if(*p=='+'|| *p=='-'|| *p=='*' || *p=='/')  //if operator
+int evaluateExpression(char *expression, int *errorFlag)
+{
+    int numberStack[100], numberTop = -1;
+    char operatorStack[100], operatorTop = -1;
+    char *currentPtr = skip_spaces(expression);
+
+    while (*currentPtr)
+    {
+        if (isdigit(*currentPtr))
         {
-            while(opTop>=0 && precedence(opstack[opTop])>=precedence(*p))
+            int num = strtol(currentPtr, &currentPtr, 10);
+            numberStack[++numberTop] = num;
+        }
+        else if (*currentPtr == '+' || *currentPtr == '-' || *currentPtr == '*' || *currentPtr == '/')
+        {
+            while (operatorTop >= 0 && precedence(operatorStack[operatorTop]) >= precedence(*currentPtr))
             {
-                int b=numstack[numTop--];
-                int a=numstack[numTop--];
-                char op=opstack[opTop--];
-                numstack[++numTop]=operation(a,b,op,error);
-                if(*error) 
-                return 0;
-            }
-             opstack[++opTop] = *p;  // 
-             p++;
-        }
-        else if(*p==' ' || *p=='\n')  //if newline or spaces
-        {
-            p++;
-            
-        }
+                int operand2 = numberStack[numberTop--];
+                int operand1 = numberStack[numberTop--];
+                char operator = operatorStack[operatorTop--];
 
-        else{           //if invalid character  
-            *error=1;
+                numberStack[++numberTop] = operation(operand1, operand2, operator, errorFlag);
+                if (*errorFlag)
+                {
+                    return 0;
+                }
+            }
+            operatorStack[++operatorTop] = *currentPtr;
+            currentPtr++;
+        }
+        else if (*currentPtr == ' ' || *currentPtr == '\n')
+        {
+            currentPtr++; 
+        }
+        else
+        {
+            *errorFlag = 1;
+            return 0;
+        } 
+    }
+
+    while (operatorTop >= 0)
+    {
+        int operand2 = numberStack[numberTop--];
+        int operand1 = numberStack[numberTop--];
+        char operator = operatorStack[operatorTop--];
+
+        numberStack[++numberTop] = operation(operand1, operand2, operator, errorFlag);
+        if (*errorFlag)
+        {
             return 0;
         }
-
-
-
     }
 
-    while(opTop>=0)
+    return numberStack[numberTop];
+}
+
+char *skip_spaces(char *ptr)
+{
+    while (*ptr == ' ')
     {
-        int b=numstack[numTop--];
-        int a=numstack[numTop--];
-        char op=opstack[opTop--];
-        numstack[++numTop]=operation(a,b,op,error);
-        if(*error) 
-        return 0;
-    
+        ptr++;
     }
-   return numstack[numTop];
-
-
+    return ptr;
 }
 
-char *skip_spaces(char *p)
+int precedence(char operator)
 {
-    while(*p==' ')
-    p++;
-    return p;
-}
+    int value = 0;
 
-int precedence(char op)
-{
-    if(op=='+' || op=='-')
-    return 1;
-    
-    if(op=='*' || op== '/')
-    return 2;
-
-    return 0;
-}
-
-int operation(int a,int b,char op,int *error)
-{
-    switch(op)
+    if (operator == '+' || operator == '-')
     {
-        case '+':return a+b;
-        case '-': return a-b;
-        case '*':return a*b;
+        value = 1;
+    }
+    else if (operator == '*' || operator == '/')
+    {
+        value = 2;
+    }
+
+    return value;
+}
+
+int operation(int operand1, int operand2, char operator, int *errorFlag)
+{
+    switch (operator)
+    {
+        case '+': return operand1 + operand2;
+        case '-': return operand1 - operand2;
+        case '*': return operand1 * operand2;
         case '/':
-            if(b==0)
+            if (operand2 == 0)
             {
-                *error=2;
+                *errorFlag = 2;
                 return 0;
             }
-            return a/b;
-
+            return operand1 / operand2;
+        default:
+            *errorFlag = 1;
+            return 0;
     }
-    *error=1;
-    return 0;
 }
+
