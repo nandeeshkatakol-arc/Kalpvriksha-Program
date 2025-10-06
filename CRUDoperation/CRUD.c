@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-#define FILEname "users.txt"
+#define FILE_NAME "users.txt"
 
 void Create();
 void Read();
@@ -52,7 +52,7 @@ int main()
 
 void Create()
 {
-    FILE *fp =fopen(FILEname, "a+");
+    FILE *fp =fopen(FILE_NAME, "a+");
 
     printf("Enter user's details\n");
 
@@ -71,11 +71,11 @@ void Create()
 
 void Read()
 {
-    FILE *fp = fopen(FILEname, "r");
+    FILE *fp = fopen(FILE_NAME, "r");
     struct User user;
     if(!fp)
     {
-        printf("User info doesn't exists\n");
+        printf("User info doesn't exists\n");   
         return;
     }
 
@@ -91,7 +91,7 @@ void Read()
 
 void Update()
 {
-    FILE *fp = fopen(FILEname, "r");
+    FILE *fp = fopen(FILE_NAME, "r");
     if(!fp)
     {
         printf("User info doesn't exists\n");
@@ -120,8 +120,8 @@ void Update()
     }
     fclose(fp);
     fclose(temp);
-    remove(FILEname);
-    rename("temp.txt",FILEname);
+    remove(FILE_NAME);
+    rename("temp.txt",FILE_NAME);
 
     if(flag==1)
     {
@@ -137,59 +137,30 @@ void Update()
 
 void Delete()
 {
-    FILE *fp=fopen(FILEname,"r");
+    FILE *fp=fopen(FILE_NAME,"r");
     if(!fp)
     {
         printf("User info doesn't exists\n");
         return;
     }
-    int choice, id ,flag=0;
-    printf("delete by\n1.by ID\n2.by name\nEnter your choice: ");
-    scanf("%d",&choice);
+    int choice, id ,flag=0; 
     FILE *temp=fopen("temp.txt","w");
     struct User user;
-    switch(choice)
+    printf("Enter user id to delete: ");
+    scanf("%d",&id);
+    while(fscanf(fp,"%d %s %d",&user.id,user.name,&user.age)!=EOF)
     {
-        case 1:
-            printf("Enter user id to delete: ");
-            scanf("%d",&id);
-
-            while(fscanf(fp,"%d %s %d",&user.id,user.name,&user.age)!=EOF)
-            {
-                if(user.id==id)
-                {
-                    flag=1;
-                    continue;
-                }
-                fprintf(temp,"%d %s %d\n",user.id,user.name,user.age);
-            }
-            break;
-        case 2:
-            printf("Enter the name to delete: ");
-            char name[40];
-            scanf("%s",name);
-            while(fscanf(fp,"%d %s %d",&user.id,user.name,&user.age)!=EOF)
-            {
-                if(strcmp(user.name,name)==0)
-                {
-                    flag=1;
-                    continue;
-                }
-                fprintf(temp,"%d %s %d\n",user.id,user.name,user.age);
-            }
-            break;
-        default:
-            printf("Invalid choice!\n");
-            fclose(fp);
-            fclose(temp);
-            remove("temp.txt"); 
-            return;
+      if(user.id==id)
+        {
+            flag=1;
+            continue;
+        }
+        fprintf(temp,"%d %s %d\n",user.id,user.name,user.age);
     }
-
     fclose (fp);
     fclose(temp);
-    remove(FILEname);
-    rename("temp.txt",FILEname);
+    remove(FILE_NAME);
+    rename("temp.txt",FILE_NAME);
 
     if(flag)
     printf("User info deleted successfully!\n");
