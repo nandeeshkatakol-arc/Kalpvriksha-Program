@@ -198,10 +198,10 @@ void displayUserData()
 
 int main()
 {
-    int choice = 0;
+    int choice = 0,start=1;
     enum CrudOperation operation;
 
-    while (1)
+    while (start)
     {
         displayUserData();
         printf("Enter your choice: ");
@@ -226,7 +226,7 @@ int main()
         }
         else if (operation == EXIT_PROGRAM)
         {
-            break;
+            start=0;
         }
         else
         {
