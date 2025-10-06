@@ -4,10 +4,10 @@
 
 #define FILE_NAME "users.txt"
 
-void Create();
-void Read();
-void Update();
-void Delete();
+void addUserData();
+void readUserData();
+void updateUserData();
+void deleteUserData();
 
 struct User
 {
@@ -23,23 +23,23 @@ int main()
     
     while(1)
     {
-        printf("\n1. Create\n2. Read\n3. Update\n4. Delete\n5. Exit\n");
+        printf("\n1. addUserData\n2. readUserData\n3. updateUserData\n4. deleteUserData\n5. Exit\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
         
         switch(choice)
         {
             case 1:
-                Create();
+                addUserData();
                 break;
             case 2:
-                Read();
+                readUserData();
                 break;
             case 3:
-                Update();
+                updateUserData();
                 break;
             case 4:
-                Delete();
+                deleteUserData();
                 break;
             case 5:
                 exit(0);
@@ -50,7 +50,7 @@ int main()
     return 0;
 }
 
-void Create()
+void addUserData()
 {
     FILE *fp =fopen(FILE_NAME, "a+");
 
@@ -64,12 +64,12 @@ void Create()
     printf("3.Age : "); 
     scanf("%d", &user.age);
     fprintf(fp, "%d %s %d\n", user.id, user.name, user.age);
-    printf("User created successfully!\n");
+    printf("User addUserDatad successfully!\n");
     fclose(fp);
 
 }
 
-void Read()
+void readUserData()
 {
     FILE *fp = fopen(FILE_NAME, "r");
     struct User user;
@@ -89,7 +89,7 @@ void Read()
 
 }
 
-void Update()
+void updateUserData()
 {
     FILE *fp = fopen(FILE_NAME, "r");
     if(!fp)
@@ -99,7 +99,7 @@ void Update()
     }
 
     int id,flag=0;
-    printf("Enter user ID to update: ");
+    printf("Enter user ID to updateUserData: ");
     scanf("%d", &id);
 
     FILE *temp=fopen("temp.txt","w");
@@ -125,7 +125,7 @@ void Update()
 
     if(flag==1)
     {
-        printf("User info updated successfully!\n");
+        printf("User info updateUserDatad successfully!\n");
 
     }
     else
@@ -135,7 +135,7 @@ void Update()
 
 }
 
-void Delete()
+void deleteUserData()
 {
     FILE *fp=fopen(FILE_NAME,"r");
     if(!fp)
@@ -146,7 +146,7 @@ void Delete()
     int choice, id ,flag=0; 
     FILE *temp=fopen("temp.txt","w");
     struct User user;
-    printf("Enter user id to delete: ");
+    printf("Enter user id to deleteUserData: ");
     scanf("%d",&id);
     while(fscanf(fp,"%d %s %d",&user.id,user.name,&user.age)!=EOF)
     {
@@ -163,7 +163,7 @@ void Delete()
     rename("temp.txt",FILE_NAME);
 
     if(flag)
-    printf("User info deleted successfully!\n");
+    printf("User info deleteUserDatad successfully!\n");
     else
     printf("User not found!\n");
 }
