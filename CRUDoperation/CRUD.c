@@ -73,12 +73,10 @@ void ReadUserData()
 {
     FILE *fp = OpenFile("r");
     struct User user;
-    int returnCode = 0;
 
     if (fp == NULL)
     {
         printf("User info doesn't exist\n");
-        returnCode = 1;
     }
     else
     {
@@ -198,7 +196,7 @@ void displayUserData()
 
 int main()
 {
-    int choice = 0,start=1;
+    int choice = 0, start = 1;
     enum CrudOperation operation;
 
     while (start)
@@ -208,29 +206,38 @@ int main()
         scanf("%d", &choice);
         operation = (enum CrudOperation)choice;
 
-        if (operation == ADD_USER)
+        switch (operation)
+        {
+        case ADD_USER:
         {
             addUserData();
+            break;
         }
-        else if (operation == DISPLAY_USERS)
+        case DISPLAY_USERS:
         {
             ReadUserData();
+            break;
         }
-        else if (operation == UPDATE_USER)
+        case UPDATE_USER:
         {
             UpdateUserData();
+            break;
         }
-        else if (operation == DELETE_USER)
+        case DELETE_USER:
         {
             DeleteUserData();
+            break;
         }
-        else if (operation == EXIT_PROGRAM)
+        case EXIT_PROGRAM:
         {
-            start=0;
+            start = 0;
+            break;
         }
-        else
+        default:
         {
-            printf("invalid choice!\n");
+            printf("Invalid choice!\n");
+            break;
+        }
         }
     }
 
