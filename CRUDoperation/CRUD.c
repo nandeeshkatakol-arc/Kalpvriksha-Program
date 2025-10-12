@@ -213,36 +213,36 @@ int main()
 
         switch (operation)
         {
-        case ADD_USER:
-        {
-            addUserData();
-            break;
-        }
-        case DISPLAY_USERS:
-        {
-            ReadUserData();
-            break;
-        }
-        case UPDATE_USER:
-        {
-            UpdateUserData();
-            break;
-        }
-        case DELETE_USER:
-        {
-            DeleteUserData();
-            break;
-        }
-        case EXIT_PROGRAM:
-        {
-            start = 0;
-            break;
-        }
-        default:
-        {
-            printf("Invalid choice!\n");
-            break;
-        }
+            case ADD_USER:
+            {
+                addUserData();
+                break;
+            }
+            case DISPLAY_USERS:
+            {
+                ReadUserData();
+                break;
+            }
+            case UPDATE_USER:
+            {
+                UpdateUserData();
+                break;
+            }
+            case DELETE_USER:
+            {
+                DeleteUserData();
+                break;
+            }
+            case EXIT_PROGRAM:
+            {
+                start = 0;
+                break;
+            }
+            default:
+            {
+                printf("Invalid choice!\n");
+                break;
+            }
         }
     }
 
