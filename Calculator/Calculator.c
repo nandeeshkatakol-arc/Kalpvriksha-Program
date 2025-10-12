@@ -28,30 +28,36 @@ int precedence(char operator)
     return value;
 }
 
-int operation(int operand1, int operand2, char operator, int *errorFlag) {
-    int result = 0; // single return variable
+int operation(int operand1, int operand2, char operator, int *errorFlag)
+{
+    int result = 0;
 
-    switch (operator) {
-        case '+':
-            result = operand1 + operand2;
-            break;
-        case '-':
-            result = operand1 - operand2;
-            break;
-        case '*':
-            result = operand1 * operand2;
-            break;
-        case '/':
-            if (operand2 == 0) {
-                *errorFlag = 2; // Division by zero
-                result = 0;
-            } else {
-                result = operand1 / operand2;
-            }
-            break;
-        default:
-            *errorFlag = 1; // Invalid operator
+    switch (operator)
+    {
+    case '+':
+        result = operand1 + operand2;
+        break;
+    case '-':
+        result = operand1 - operand2;
+        break;
+    case '*':
+        result = operand1 * operand2;
+        break;
+    case '/':
+        if (operand2 == 0)
+        {
+            *errorFlag = 2;
             result = 0;
+        }
+        else
+        {
+            result = operand1 / operand2;
+        }
+        break;
+    default:
+        *errorFlag = 1;
+        result = 0;
+        break;
     }
 
     return result;
@@ -64,7 +70,7 @@ int evaluateExpression(char *expression, int *errorFlag)
     char *currentPtr = skipSpaces(expression);
     int finalResult = 0;
 
-    while (*currentPtr)
+    while (*currentPtr && *errorFlag == 0)
     {
         if (isdigit(*currentPtr))
         {
@@ -82,45 +88,48 @@ int evaluateExpression(char *expression, int *errorFlag)
                 numberStack[++numberTop] = operation(operand1, operand2, operator, errorFlag);
                 if (*errorFlag)
                 {
-                    finalResult = 0;
-                    goto END;
+                    break;
                 }
             }
+
+            if (*errorFlag)
+            {
+                break;
+            }
+
             operatorStack[++operatorTop] = *currentPtr;
             currentPtr++;
         }
         else if (*currentPtr == ' ' || *currentPtr == '\n')
         {
-            currentPtr++; 
+            currentPtr++;
         }
         else
         {
             *errorFlag = 1;
-            finalResult = 0;
-            goto END;
-        } 
+            break;
+        }
     }
 
-    while (operatorTop >= 0)
+    while (operatorTop >= 0 && *errorFlag == 0)
     {
         int operand2 = numberStack[numberTop--];
         int operand1 = numberStack[numberTop--];
         char operator = operatorStack[operatorTop--];
 
         numberStack[++numberTop] = operation(operand1, operand2, operator, errorFlag);
-        if (*errorFlag)
-        {
-            finalResult = 0;
-            goto END;
-        }
     }
 
-    finalResult = numberStack[numberTop];
-END:
+    if (*errorFlag == 0)
+    {
+        finalResult = numberStack[numberTop];
+    }
+
     return finalResult;
 }
 
-int main() {
+int main()
+{
     char expression[100];
     printf("Enter the expression: ");
     fgets(expression, sizeof(expression), stdin);
@@ -131,7 +140,7 @@ int main() {
     if (errorFlag == 1)
     {
         printf("Error: Invalid Expression\n");
-    }   
+    }
     else if (errorFlag == 2)
     {
         printf("Error: Division by Zero\n");
