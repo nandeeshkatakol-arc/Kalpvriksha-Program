@@ -49,24 +49,29 @@ void CloseFile(FILE *fp)
 void addUserData()
 {
     FILE *fp = OpenFile("a+");
-    if (fp == NULL)
+    struct User user;
+
+    if (fp != NULL)
     {
-        return;
+        printf("Enter user's details\n");
+        printf("1.ID : ");
+        scanf("%d", &user.id);
+        printf("2.Name : ");
+        scanf("%s", user.name);
+        printf("3.Age : ");
+        scanf("%d", &user.age);
+
+        fprintf(fp, "%d %s %d\n", user.id, user.name, user.age);
+        printf("User added successfully!\n");
+
+        CloseFile(fp);
+    }
+    else
+    {
+        printf("Error: Could not open file for adding user.\n");
     }
 
-    struct User user;
-    printf("Enter user's details\n");
-    printf("1.ID : ");
-    scanf("%d", &user.id);
-    printf("2.Name : ");
-    scanf("%s", user.name);
-    printf("3.Age : ");
-    scanf("%d", &user.age);
-
-    fprintf(fp, "%d %s %d\n", user.id, user.name, user.age);
-    printf("User addUserDatad successfully!\n");
-
-    CloseFile(fp);
+    return;
 }
 
 void ReadUserData()
