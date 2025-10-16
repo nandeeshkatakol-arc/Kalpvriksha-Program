@@ -26,66 +26,71 @@ typedef struct
 
 void printRollRecursive(const Student students[], int index, int count)
 {
-    if (index >= count)
+    int done = 0;
+    if (index < count)
     {
-        return;
+        printf("%d ", students[index].rollNo);
+        printRollRecursive(students, index + 1, count);
     }
-
-    printf("%d ", students[index].rollNo);
-    printRollRecursive(students, index + 1, count);
+    else
+    {
+        done = 1;
+    }
+    if (done) {;}
 }
 
 float calculateTotal(const float marks[])
 {
     float total = 0;
-
     for (int i = 0; i < SUBJECTS; i++)
     {
         total += marks[i];
     }
-
     return total;
 }
 
 float calculateAverage(float total)
 {
-    return total / SUBJECTS;
+    float avg = total / SUBJECTS;
+    return avg;
 }
 
 Grade calculateGrade(float average)
 {
+    Grade grade = GRADE_F;
+
     if (average >= 85)
     {
-        return GRADE_A;
+        grade = GRADE_A;
     }
     else if (average >= 70)
     {
-        return GRADE_B;
+        grade = GRADE_B;
     }
     else if (average >= 50)
     {
-        return GRADE_C;
+        grade = GRADE_C;
     }
     else if (average >= 35)
     {
-        return GRADE_D;
+        grade = GRADE_D;
     }
     else
     {
-        return GRADE_F;
+        grade = GRADE_F;
     }
+
+    return grade;
 }
 
 int isValidMark(float mark)
 {
+    int valid = 0;
     if (mark >= MIN_MARK && mark <= MAX_MARK)
     {
-        return 1;
+        valid = 1;
     }
-    else
-    {
-        return 0;
-    }
+    return valid;
 }
 
 void readSingleStudent(Student *s)
@@ -111,7 +116,6 @@ void processStudents(Student students[], int count)
     for (int i = 0; i < count; i++)
     {
         int valid = 1;
-
         for (int j = 0; j < SUBJECTS; j++)
         {
             if (!isValidMark(students[i].marks[j]))
@@ -137,7 +141,11 @@ void showStudent(const Student *s)
 {
     printf("Roll No: %d\n", s->rollNo);
     printf("Name: %s\n", s->name);
-    printf("Marks: %.2f %.2f %.2f\n", s->marks[0], s->marks[1], s->marks[2]);
+    printf("Marks:\n");
+    for (int i = 0; i < SUBJECTS; i++)
+    {
+        printf("  Subject %d: %.2f\n", i + 1, s->marks[i]);
+    }
     printf("Total: %.2f\n", s->total);
     printf("Average: %.2f\n", s->average);
     printf("Grade: %c\n\n", 'A' + s->grade);
@@ -154,22 +162,26 @@ void displayAllStudents(const Student students[], int count)
 int main(void)
 {
     int totalStudents;
+    int exitCode = 0;
+
     scanf("%d", &totalStudents);
 
-    if (totalStudents <= 0)
+    if (totalStudents > 0)
     {
-        return 0;
+        Student students[totalStudents];
+
+        readAllStudents(students, totalStudents);
+        processStudents(students, totalStudents);
+        displayAllStudents(students, totalStudents);
+
+        printf("List of Roll Numbers: ");
+        printRollRecursive(students, 0, totalStudents);
+        printf("\n");
+    }
+    else
+    {
+        exitCode = 0;
     }
 
-    Student students[totalStudents];
-
-    readAllStudents(students, totalStudents);
-    processStudents(students, totalStudents);
-    displayAllStudents(students, totalStudents);
-
-    printf("List of Roll Numbers: ");
-    printRollRecursive(students, 0, totalStudents);
-    printf("\n");
-
-    return 0;
+    return exitCode;
 }
