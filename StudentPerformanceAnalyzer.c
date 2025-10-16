@@ -48,8 +48,7 @@ float calculateTotal(const float marks[])
 
 float calculateAverage(float total)
 {
-    float average = 0.0;
-    average = total / SUBJECTS;
+    float average = total / SUBJECTS;
     return average;
 }
 
@@ -161,15 +160,10 @@ void printPerformanceStars(Grade grade)
     {
         starsCount = 2;
     }
-    else if (grade == GRADE_F)
-    {
-        starsCount = 0;
-    }
 
     if (starsCount > 0)
     {
         int i;
-        printf("Performance: ");
         for (i = 0; i < starsCount; i++)
         {
             printf("*");
@@ -180,20 +174,15 @@ void printPerformanceStars(Grade grade)
 
 void showStudent(const Student *student)
 {
-    int i;
-    printf("Roll No: %d\n", student->rollNumber);
+    printf("Roll: %d\n", student->rollNumber);
     printf("Name: %s\n", student->studentName);
-    printf("Marks:\n");
-    for (i = 0; i < SUBJECTS; i++)
-    {
-        printf("  Subject %d: %.2f\n", i + 1, student->marks[i]);
-    }
     printf("Total: %.2f\n", student->totalMarks);
     printf("Average: %.2f\n", student->averageMarks);
     printf("Grade: %c\n", 'A' + student->grade);
 
     if (student->grade != GRADE_F)
     {
+        printf("Performance: ");
         printPerformanceStars(student->grade);
     }
 
@@ -225,7 +214,7 @@ int main(void)
     processStudents(students, totalStudents);
     displayAllStudents(students, totalStudents);
 
-    printf("List of Roll Numbers: ");
+    printf("List of Roll Numbers (via recursion): ");
     printRollNumbersRecursive(students, 0, totalStudents);
     printf("\n");
 
