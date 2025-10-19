@@ -48,20 +48,22 @@ void rotateImageClockwise(int *image, int sizeOfImage)
 
 void applySmoothingFilter(int *image, int sizeOfImage)
 {
-    int buffer[sizeOfImage * sizeOfImage];
-    int rows;
-    int columns;
-    for (rows = 0; rows < sizeOfImage; rows++)
+    int tempRow[sizeOfImage];
+    int rowIndex;
+    int columnIndex;
+
+    for (rowIndex = 0; rowIndex < sizeOfImage; rowIndex++)
     {
-        for (columns = 0; columns < sizeOfImage; columns++)
+        for (columnIndex = 0; columnIndex < sizeOfImage; columnIndex++)
         {
             int sum = 0;
             int count = 0;
             int neighborRow;
             int neighborColumn;
-            for (neighborRow = rows - 1; neighborRow <= rows + 1; neighborRow++)
+
+            for (neighborRow = rowIndex - 1; neighborRow <= rowIndex + 1; neighborRow++)
             {
-                for (neighborColumn = columns - 1; neighborColumn <= columns + 1; neighborColumn++)
+                for (neighborColumn = columnIndex - 1; neighborColumn <= columnIndex + 1; neighborColumn++)
                 {
                     if (neighborRow >= 0 && neighborRow < sizeOfImage && neighborColumn >= 0 && neighborColumn < sizeOfImage)
                     {
@@ -70,13 +72,13 @@ void applySmoothingFilter(int *image, int sizeOfImage)
                     }
                 }
             }
-            buffer[rows * sizeOfImage + columns] = sum / count;
+            tempRow[columnIndex] = sum / count;
         }
-    }
-    int iterator;
-    for (iterator = 0; iterator < sizeOfImage * sizeOfImage; iterator++)
-    {
-        *(image + iterator) = buffer[iterator];
+
+        for (columnIndex = 0; columnIndex < sizeOfImage; columnIndex++)
+        {
+            *(image + rowIndex * sizeOfImage + columnIndex) = tempRow[columnIndex];
+        }
     }
 }
 
