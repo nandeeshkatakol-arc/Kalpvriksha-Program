@@ -91,6 +91,7 @@ int isValidMark(const float mark)
 void readStudentData(Student students[], const int totalStudents)
 {
     int studentIndex;
+    printf("Enter details for Student %d (RollNumber Name Marks1 Marks2 Marks3): ", studentIndex + 1);
     for (studentIndex = 0; studentIndex < totalStudents; studentIndex++)
     {
         scanf("%d %s %f %f %f",
@@ -194,23 +195,24 @@ void displayAllStudents(const Student students[], const int totalStudents)
 int main()
 {
     int totalStudents;
+    printf("Enter number of students: ");
     scanf("%d", &totalStudents);
 
-    if (totalStudents <= 0 && totalStudents > MAX_STUDENTS)
-    {
-        printf("Invalid number of students.\n");
-    }
-    else
+    if (totalStudents > 0 && totalStudents <= MAX_STUDENTS)
     {
         Student students[MAX_STUDENTS];
 
-        readAllStudents(students, totalStudents);
+        readStudentData(students, totalStudents);
         processStudents(students, totalStudents);
         displayAllStudents(students, totalStudents);
 
-        printf("List of Roll Numbers (via recursion): ");
+        printf("List of Roll Numbers : ");
         printRollNumbersRecursive(students, 0, totalStudents);
         printf("\n");
+    }
+    else
+    {
+        printf("Invalid number of students.\n");
     }
 
     return 0;
