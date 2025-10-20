@@ -91,18 +91,18 @@ int main()
     srand(time(NULL));
 
     int image[sizeOfImage][sizeOfImage];
-    generateImage(&image[0][0], sizeOfImage);
+    generateImage((int *)image, sizeOfImage);
 
     printf("\nOriginal Randomly Generated Image:\n");
-    printImage(&image[0][0], sizeOfImage);
+    printImage((int *)image, sizeOfImage);
 
     rotateImageClockwise(&image[0][0], sizeOfImage);
     printf("\nImage after 90 Clockwise Rotation:\n");
-    printImage(&image[0][0], sizeOfImage);
+    printImage((int *)image, sizeOfImage);
 
     applySmoothingFilter(&image[0][0], sizeOfImage);
     printf("\nImage after Applying 3x3 Smoothing Filter:\n");
-    printImage(&image[0][0], sizeOfImage);
+    printImage((int *)image, sizeOfImage);
 
     return 0;
 }
