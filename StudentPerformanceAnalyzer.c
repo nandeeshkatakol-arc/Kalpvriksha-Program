@@ -1,17 +1,18 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAX_STUDENTS 100
 #define SUBJECTS 3
 #define MAX_MARK 100
 #define MIN_MARK 0
 
 typedef enum
 {
-    GRADE_A,
-    GRADE_B,
-    GRADE_C,
-    GRADE_D,
-    GRADE_F
+    A,
+    B,
+    C,
+    D,
+    F
 } Grade;
 
 typedef struct
@@ -38,57 +39,52 @@ void printRollNumbersRecursive(const Student students[], int index, int totalStu
 float calculateTotal(const float marks[])
 {
     float total = 0.0;
-    int i;
-    for (i = 0; i < SUBJECTS; i++)
+    int subjectIndex;
+    for (subjectIndex = 0; subjectIndex < SUBJECTS; subjectIndex++)
     {
-        total = total + marks[i];
+        total = total + marks[subjectIndex];
     }
     return total;
 }
 
-float calculateAverage(float total)
+float calculateAverage(const float total)
 {
     float average = total / SUBJECTS;
     return average;
 }
 
-Grade calculateGrade(float average)
+Grade assignGrade(const float average)
 {
-    Grade resultGrade = GRADE_F;
-
+    Grade resultGrade = F;
     if (average >= 85)
     {
-        resultGrade = GRADE_A;
+        resultGrade = A;
     }
     else if (average >= 70)
     {
-        resultGrade = GRADE_B;
+        resultGrade = B;
     }
     else if (average >= 50)
     {
-        resultGrade = GRADE_C;
+        resultGrade = C;
     }
     else if (average >= 35)
     {
-        resultGrade = GRADE_D;
+        resultGrade = D;
     }
     else
     {
-        resultGrade = GRADE_F;
+        resultGrade = F;
     }
-
     return resultGrade;
 }
 
-int isValidMark(float mark)
+int isValidMark(const float mark)
 {
     int valid = 0;
-    if (mark >= MIN_MARK)
+    if (mark >= MIN_MARK && mark <= MAX_MARK)
     {
-        if (mark <= MAX_MARK)
-        {
-            valid = 1;
-        }
+        valid = 1;
     }
     return valid;
 }
@@ -103,25 +99,25 @@ void readSingleStudent(Student *student)
           &student->marks[2]);
 }
 
-void readAllStudents(Student students[], int totalStudents)
+void readAllStudents(Student students[], const int totalStudents)
 {
-    int i;
-    for (i = 0; i < totalStudents; i++)
+    int studentIndex;
+    for (studentIndex = 0; studentIndex < totalStudents; studentIndex++)
     {
-        readSingleStudent(&students[i]);
+        readSingleStudent(&students[studentIndex]);
     }
 }
 
-void processStudents(Student students[], int totalStudents)
+void processStudents(Student students[], const int totalStudents)
 {
-    int i, j;
-    for (i = 0; i < totalStudents; i++)
+    int studentIndex;
+    for (studentIndex = 0; studentIndex < totalStudents; studentIndex++)
     {
         int validMarks = 1;
-
-        for (j = 0; j < SUBJECTS; j++)
+        int subjectIndex;
+        for (subjectIndex = 0; subjectIndex < SUBJECTS; subjectIndex++)
         {
-            if (!isValidMark(students[i].marks[j]))
+            if (!isValidMark(students[studentIndex].marks[subjectIndex]))
             {
                 validMarks = 0;
                 break;
@@ -130,41 +126,40 @@ void processStudents(Student students[], int totalStudents)
 
         if (!validMarks)
         {
-            printf("Invalid marks for Roll %d. Skipping.\n", students[i].rollNumber);
+            printf("Invalid marks for Roll %d. Skipping.\n", students[studentIndex].rollNumber);
             continue;
         }
 
-        students[i].totalMarks = calculateTotal(students[i].marks);
-        students[i].averageMarks = calculateAverage(students[i].totalMarks);
-        students[i].grade = calculateGrade(students[i].averageMarks);
+        students[studentIndex].totalMarks = calculateTotal(students[studentIndex].marks);
+        students[studentIndex].averageMarks = calculateAverage(students[studentIndex].totalMarks);
+        students[studentIndex].grade = assignGrade(students[studentIndex].averageMarks);
     }
 }
 
-void printPerformanceStars(Grade grade)
+void printPerformanceStars(const Grade grade)
 {
     int starsCount = 0;
-
-    if (grade == GRADE_A)
+    if (grade == A)
     {
         starsCount = 5;
     }
-    else if (grade == GRADE_B)
+    else if (grade == B)
     {
         starsCount = 4;
     }
-    else if (grade == GRADE_C)
+    else if (grade == C)
     {
         starsCount = 3;
     }
-    else if (grade == GRADE_D)
+    else if (grade == D)
     {
         starsCount = 2;
     }
 
     if (starsCount > 0)
     {
-        int i;
-        for (i = 0; i < starsCount; i++)
+        int iterator;
+        for (iterator = 0; iterator < starsCount; iterator++)
         {
             printf("*");
         }
@@ -179,36 +174,38 @@ void showStudent(const Student *student)
     printf("Total: %.2f\n", student->totalMarks);
     printf("Average: %.2f\n", student->averageMarks);
     printf("Grade: %c\n", 'A' + student->grade);
-
-    if (student->grade != GRADE_F)
-    {
-        printf("Performance: ");
-        printPerformanceStars(student->grade);
-    }
-
-    printf("\n");
 }
 
-void displayAllStudents(const Student students[], int totalStudents)
+void displayAllStudents(const Student students[], const int totalStudents)
 {
-    int i;
-    for (i = 0; i < totalStudents; i++)
+    int studentIndex;
+    for (studentIndex = 0; studentIndex < totalStudents; studentIndex++)
     {
-        showStudent(&students[i]);
+        if (students[studentIndex].grade == F)
+        {
+            showStudent(&students[studentIndex]);
+            continue;
+        }
+
+        showStudent(&students[studentIndex]);
+        printf("Performance: ");
+        printPerformanceStars(students[studentIndex].grade);
+        printf("\n");
     }
 }
 
 int main(void)
 {
     int totalStudents;
+    int exitStatus = 0;
     scanf("%d", &totalStudents);
 
-    if (totalStudents <= 0)
+    if (totalStudents <= 0 || totalStudents > MAX_STUDENTS)
     {
-        return 0;
+        exitStatus = 1;
     }
 
-    Student students[totalStudents];
+    Student students[MAX_STUDENTS];
 
     readAllStudents(students, totalStudents);
     processStudents(students, totalStudents);
@@ -218,5 +215,5 @@ int main(void)
     printRollNumbersRecursive(students, 0, totalStudents);
     printf("\n");
 
-    return 0;
+    return exitStatus;
 }
