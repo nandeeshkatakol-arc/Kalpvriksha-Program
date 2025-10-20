@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 void generateImage(int *image, int sizeOfImage)
 {
@@ -87,6 +88,7 @@ int main()
     int sizeOfImage;
     printf("Enter matrix size (2-10): ");
     scanf("%d", &sizeOfImage);
+    srand(time(NULL));
 
     int image[sizeOfImage][sizeOfImage];
     generateImage(&image[0][0], sizeOfImage);
