@@ -49,7 +49,7 @@ void rotateImageClockwise(int *image, int sizeOfImage)
 
 void applySmoothingFilter(int *image, int sizeOfImage)
 {
-    int tempRow[sizeOfImage];
+    int *tempRow = malloc(sizeOfImage * sizeof(int));
     int rowIndex;
     int columnIndex;
 
@@ -73,14 +73,15 @@ void applySmoothingFilter(int *image, int sizeOfImage)
                     }
                 }
             }
-            tempRow[columnIndex] = sum / count;
+        *(tempRow + columnIndex) = sum / count;
         }
 
         for (columnIndex = 0; columnIndex < sizeOfImage; columnIndex++)
         {
-            *(image + rowIndex * sizeOfImage + columnIndex) = tempRow[columnIndex];
+            *(image + rowIndex * sizeOfImage + columnIndex) = *(tempRow + columnIndex);
         }
     }
+    free(tempRow);
 }
 
 int main()
