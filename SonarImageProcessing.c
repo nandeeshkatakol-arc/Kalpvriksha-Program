@@ -90,19 +90,20 @@ int main()
     scanf("%d", &sizeOfImage);
     srand(time(NULL));
 
-    int image[sizeOfImage][sizeOfImage];
-    generateImage((int *)image, sizeOfImage);
+    int *image = malloc(sizeOfImage * sizeOfImage * sizeof(int));
+    generateImage(image, sizeOfImage);
 
     printf("\nOriginal Randomly Generated Image:\n");
-    printImage((int *)image, sizeOfImage);
+    printImage(image, sizeOfImage);
 
-    rotateImageClockwise(&image[0][0], sizeOfImage);
+    rotateImageClockwise(image, sizeOfImage);
     printf("\nImage after 90 Clockwise Rotation:\n");
-    printImage((int *)image, sizeOfImage);
+    printImage(image, sizeOfImage);
 
-    applySmoothingFilter(&image[0][0], sizeOfImage);
+    applySmoothingFilter(image, sizeOfImage);
     printf("\nImage after Applying 3x3 Smoothing Filter:\n");
-    printImage((int *)image, sizeOfImage);
+    printImage(image, sizeOfImage);
 
+    free(image)
     return 0;
 }
