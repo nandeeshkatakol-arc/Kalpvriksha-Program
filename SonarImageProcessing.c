@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-void generateImage(int *image, int sizeOfImage)
+void generateImage(int *image, const int sizeOfImage)
 {
     int iterator;
     for (iterator = 0; iterator < sizeOfImage * sizeOfImage; iterator++)
@@ -11,7 +11,7 @@ void generateImage(int *image, int sizeOfImage)
     }
 }
 
-void printImage(int *image, int sizeOfImage)
+void printImage(int *image, const int sizeOfImage)
 {
     int rows;
     int columns;
@@ -25,7 +25,7 @@ void printImage(int *image, int sizeOfImage)
     }
 }
 
-void rotateImageClockwise(int *image, int sizeOfImage)
+void rotateImageClockwise(int *image, const int sizeOfImage)
 {
     int rows;
     int columns;
@@ -47,7 +47,7 @@ void rotateImageClockwise(int *image, int sizeOfImage)
     }
 }
 
-void applySmoothingFilter(int *image, int sizeOfImage)
+void applySmoothingFilter(int *image, const int sizeOfImage)
 {
     int *tempRow = malloc(sizeOfImage * sizeof(int));
     int rowIndex;
@@ -73,7 +73,7 @@ void applySmoothingFilter(int *image, int sizeOfImage)
                     }
                 }
             }
-        *(tempRow + columnIndex) = sum / count;
+            *(tempRow + columnIndex) = sum / count;
         }
 
         for (columnIndex = 0; columnIndex < sizeOfImage; columnIndex++)
@@ -89,6 +89,7 @@ int main()
     int sizeOfImage;
     printf("Enter matrix size (2-10): ");
     scanf("%d", &sizeOfImage);
+    
     srand(time(NULL));
 
     int *image = malloc(sizeOfImage * sizeOfImage * sizeof(int));
