@@ -104,6 +104,6 @@ int main()
     printf("\nImage after Applying 3x3 Smoothing Filter:\n");
     printImage(image, sizeOfImage);
 
-    free(image)
+    free(image);
     return 0;
 }
