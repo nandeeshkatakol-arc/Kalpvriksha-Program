@@ -53,6 +53,12 @@ void applySmoothingFilter(int *image, const int sizeOfImage)
     int rowIndex;
     int columnIndex;
 
+    if (tempRow == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+
     for (rowIndex = 0; rowIndex < sizeOfImage; rowIndex++)
     {
         for (columnIndex = 0; columnIndex < sizeOfImage; columnIndex++)
@@ -89,7 +95,7 @@ int main()
     int sizeOfImage;
     printf("Enter matrix size (2-10): ");
     scanf("%d", &sizeOfImage);
-    
+
     srand(time(NULL));
 
     int *image = malloc(sizeOfImage * sizeOfImage * sizeof(int));
