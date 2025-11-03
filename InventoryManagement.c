@@ -118,7 +118,8 @@ void readProduct(product *item, int currentIndex)
     }
 }
 
-void showMenu() {
+void showMenu() 
+{
     printf("\n========= INVENTORY MENU =========\n");
     printf("1. Add New Product\n");
     printf("2. View All Products\n");
@@ -190,7 +191,8 @@ void updateQuantity()
     }
 }
 
-void searchByID() {
+void searchByID() 
+{
     int target_id;
     bool found = false;
     printf("Enter Product ID to search: ");
@@ -213,7 +215,8 @@ void searchByID() {
     }
 }
 
-void search_by_name() {
+void search_by_name() 
+{
     char keyword[50];
     bool found = false;
     getchar(); 
@@ -239,7 +242,8 @@ void search_by_name() {
     }
 }
 
-void search_by_price() {
+void search_by_price() 
+{
     float min_price, max_price;
     bool found = false;
     printf("Enter minimum price: ");
