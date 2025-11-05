@@ -52,7 +52,7 @@ void readProduct(product *item, int currentIndex)
     {
         printf("Product ID: ");
         scanf("%d", &item->ID);
-        getchar();
+        while (getchar() != '\n');
 
         if (item->ID < 1 || item->ID > 10000)
         {
@@ -215,11 +215,11 @@ void searchByID()
     }
 }
 
-void search_by_name() 
+void searchByName() 
 {
     char keyword[50];
     bool found = false;
-    getchar(); 
+    while (getchar() != '\n'); 
     printf("Enter name to search (partial names allowed): ");
     fgets(keyword, sizeof(keyword), stdin);
     keyword[strcspn(keyword, "\n")] = '\0';
@@ -242,7 +242,7 @@ void search_by_name()
     }
 }
 
-void search_by_price() 
+void searchByPrice() 
 {
     float min_price, max_price;
     bool found = false;
@@ -313,30 +313,9 @@ void deleteProduct()
     }
 }
 
-int main()
+void menuChoice()
 {
     int choice;
-
-    printf("Enter the number of initial products: ");
-    scanf("%d", &totalProductCount);
-    getchar();
-
-    if (totalProductCount > 0)
-    {
-        inventory = calloc(totalProductCount, sizeof(product));
-        if (inventory == NULL)
-        {
-            printf("Memory allocation failed.\n");
-            return 1;
-        }
-
-        for (int i = 0; i < totalProductCount; i++)
-        {
-            printf("\nEnter details for product %d:\n", i + 1);
-            readProduct(&inventory[i], i);
-        }
-    }
-
     do
     {
         showMenu();
@@ -362,11 +341,11 @@ int main()
                 break;
 
             case SEARCH_BY_NAME:
-                search_by_name();
+                searchByName();
                 break;
 
             case SEARCH_BY_PRICE_RANGE:
-                search_by_price();
+                searchByPrice();
                 break;
 
             case DELETE_PRODUCT:
@@ -382,7 +361,31 @@ int main()
         }
 
     } while (choice != EXIT_PROGRAM);
+}
+int main()
+{
+    int choice;
 
+    printf("Enter the number of initial products: ");
+    scanf("%d", &totalProductCount);
+    while (getchar() != '\n');
+
+    if (totalProductCount > 0)
+    {
+        inventory = calloc(totalProductCount, sizeof(product));
+        if (inventory == NULL)
+        {
+            printf("Memory allocation failed.\n");
+            return 1;
+        }
+
+        for (int i = 0; i < totalProductCount; i++)
+        {
+            printf("\nEnter details for product %d:\n", i + 1);
+            readProduct(&inventory[i], i);
+        }
+    }
+    menuChoice();
     free(inventory);
     inventory = NULL;
     return 0;
