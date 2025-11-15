@@ -3,24 +3,31 @@
 #include "parser.h"
 #include "directory.h"
 
-int main(void)
+int main()
 {
     setupFileSystem();
-
     char line[512];
-
-    while (1)
+    int running = 1;
+    while (running)
     {
-        printf("%s> ", cwd ? cwd->name : "/");
+        if (cwd)
+        {
+            printf("%s> ", cwd->name);
+        }
+        else
+        {
+            printf("/> ");
+        }
         if (!fgets(line, sizeof(line), stdin))
         {
-            break;
+            running = 0;
         }
-
-        line[strcspn(line, "\n")] = '\0';
-        parseCommand(line);
+        else
+        {
+            line[strcspn(line, "\n")] = '\0';
+            parseCommand(line);
+        }
     }
-
     cleanupFileSystem();
     return 0;
 }

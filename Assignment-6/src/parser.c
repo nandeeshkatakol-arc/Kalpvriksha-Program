@@ -1,155 +1,217 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "parser.h"
+#include "directory.h"
+#include "file.h"
 
 static void trim(char *s)
 {
     char *p = s;
-    while (isspace((unsigned char)*p))
-    p++;
+    while (*p && isspace((unsigned char)*p))
+    {
+        p++;
+    }
     memmove(s, p, strlen(p) + 1);
-
     size_t len = strlen(s);
     while (len > 0 && isspace((unsigned char)s[len - 1]))
     {
         s[len - 1] = '\0';
-        --len;
+        len--;
     }
+    return;
 }
 
 void parseCommand(char *line)
 {
-    if (!line) return;
-
-    trim(line);
-    if (strlen(line) == 0) return;
-
-    char cmd[64] = {0};
-    char rest[512] = {0};
-
-    int n = sscanf(line, "%63s %[^\n]", cmd, rest);
-
-    if (strcmp(cmd, "mkdir") == 0)
+    int continueExec = 1;
+    char cmd[64];
+    char rest[512];
+    int n = 0;
+    if (!line)
     {
-        if (n < 2)
+        continueExec = 0;
+    }
+    if (continueExec)
+    {
+        trim(line);
+        if (strlen(line) == 0)
         {
-            printf("Usage: mkdir <name>\n");
-            return;
+            continueExec = 0;
         }
-        makeDirectory(rest);
-        return;
     }
-
-    if (strcmp(cmd, "ls") == 0)
+    if (continueExec)
     {
-        listFiles();
-        return;
+        memset(cmd, 0, sizeof(cmd));
+        memset(rest, 0, sizeof(rest));
+        n = sscanf(line, "%63s %[^\n]", cmd, rest);
     }
-
-    if (strcmp(cmd, "cd") == 0)
+    if (continueExec)
     {
-        if (n < 2)
+        if (strcmp(cmd, "mkdir") == 0)
         {
-            printf("Usage: cd <name|..>\n");
-            return;
+            if (n < 2)
+            {
+                printf("Usage: mkdir <name>\n");
+            }
+            else
+            {
+                makeDirectory(rest);
+            }
+            continueExec = 0;
         }
-        changeDirectory(rest);
-        return;
     }
-
-    if (strcmp(cmd, "pwd") == 0)
+    if (continueExec)
     {
-        showPath();
-        return;
-    }
-
-    if (strcmp(cmd, "rmdir") == 0)
-    {
-        if (n < 2)
+        if (strcmp(cmd, "ls") == 0)
         {
-            printf("Usage: rmdir <name>\n");
-            return;
+            listFiles();
+            continueExec = 0;
         }
-        removeDirectory(rest);
-        return;
     }
-
-    if (strcmp(cmd, "create") == 0)
+    if (continueExec)
     {
-        if (n < 2)
+        if (strcmp(cmd, "cd") == 0)
         {
-            printf("Usage: create <name>\n");
-            return;
+            if (n < 2)
+            {
+                printf("Usage: cd <name|..>\n");
+            }
+            else
+            {
+                changeDirectory(rest);
+            }
+            continueExec = 0;
         }
-        createFile(rest);
-        return;
     }
-
-    if (strcmp(cmd, "write") == 0)
+    if (continueExec)
     {
-        if (n < 2)
+        if (strcmp(cmd, "pwd") == 0)
         {
-            printf("Usage: write <name> \"content\"\n");
-            return;
+            showPath();
+            continueExec = 0;
         }
-
-        char name[128] = {0};
-        char content[512] = {0};
-
-        int m = sscanf(rest, "%127s %[^\n]", name, content);
-
-        if (m < 2)
-        {
-            printf("Usage: write <name> \"content\"\n");
-            return;
-        }
-
-        trim(content);
-
-        if (content[0] == '"' && content[strlen(content) - 1] == '"')
-        {
-            content[strlen(content) - 1] = '\0';
-            memmove(content, content + 1, strlen(content));
-        }
-
-        writeFile(name, content);
-        return;
     }
-
-    if (strcmp(cmd, "read") == 0)
+    if (continueExec)
     {
-        if (n < 2)
+        if (strcmp(cmd, "rmdir") == 0)
         {
-            printf("Usage: read <name>\n");
-            return;
+            if (n < 2)
+            {
+                printf("Usage: rmdir <name>\n");
+            }
+            else
+            {
+                removeDirectory(rest);
+            }
+            continueExec = 0;
         }
-        readFile(rest);
-        return;
     }
-
-    if (strcmp(cmd, "delete") == 0)
+    if (continueExec)
     {
-        if (n < 2)
+        if (strcmp(cmd, "create") == 0)
         {
-            printf("Usage: delete <name>\n");
-            return;
+            if (n < 2)
+            {
+                printf("Usage: create <name>\n");
+            }
+            else
+            {
+                createFile(rest);
+            }
+            continueExec = 0;
         }
-        deleteFile(rest);
-        return;
     }
-
-    if (strcmp(cmd, "df") == 0)
+    if (continueExec)
     {
-        showDiskInfo();
-        return;
+        if (strcmp(cmd, "write") == 0)
+        {
+            if (n < 2)
+            {
+                printf("Usage: write <name> \"content\"\n");
+            }
+            else
+            {
+                char namebuf[128];
+                char content[512];
+                memset(namebuf, 0, sizeof(namebuf));
+                memset(content, 0, sizeof(content));
+                int m = sscanf(rest, "%127s %[^\n]", namebuf, content);
+                if (m < 2)
+                {
+                    printf("Usage: write <name> \"content\"\n");
+                }
+                else
+                {
+                    trim(content);
+                    size_t len = strlen(content);
+                    if (len > 1)
+                    {
+                        if (content[0] == '"' && content[len - 1] == '"')
+                        {
+                            content[len - 1] = '\0';
+                            memmove(content, content + 1, strlen(content));
+                        }
+                    }
+                    writeFile(namebuf, content);
+                }
+            }
+            continueExec = 0;
+        }
     }
-
-    if (strcmp(cmd, "exit") == 0)
+    if (continueExec)
     {
-        cleanupFileSystem();
-        exit(0);
+        if (strcmp(cmd, "read") == 0)
+        {
+            if (n < 2)
+            {
+                printf("Usage: read <name>\n");
+            }
+            else
+            {
+                readFile(rest);
+            }
+            continueExec = 0;
+        }
     }
-
-    printf("Unknown command: %s\n", cmd);
+    if (continueExec)
+    {
+        if (strcmp(cmd, "delete") == 0)
+        {
+            if (n < 2)
+            {
+                printf("Usage: delete <name>\n");
+            }
+            else
+            {
+                deleteFile(rest);
+            }
+            continueExec = 0;
+        }
+    }
+    if (continueExec)
+    {
+        if (strcmp(cmd, "df") == 0)
+        {
+            showDiskInfo();
+            continueExec = 0;
+        }
+    }
+    if (continueExec)
+    {
+        if (strcmp(cmd, "exit") == 0)
+        {
+            cleanupFileSystem();
+            exit(0);
+        }
+    }
+    if (continueExec)
+    {
+        if (strlen(cmd) > 0)
+        {
+            printf("Unknown command: %s\n", cmd);
+        }
+    }
+    return;
 }
