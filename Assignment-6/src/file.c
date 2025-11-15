@@ -107,7 +107,16 @@ void writeFile(const char *name, const char *data)
             return;
         }
 
-        int toWrite = (remaining > BLOCK_SIZE) ? BLOCK_SIZE : remaining;
+        int toWrite;
+        if (remaining > BLOCK_SIZE)
+        {
+            toWrite = BLOCK_SIZE;
+        }
+        else
+        {
+            toWrite = remaining;
+        }   
+
         memcpy(disk[blk], ptr, toWrite);
         if (toWrite < BLOCK_SIZE)
         {
@@ -147,14 +156,27 @@ void readFile(const char *name)
     }
 
     int printed = 0;
+
     for (int i = 0; i < file->numBlocks; ++i)
     {
         int blk = file->blockNumbers[i];
         int remain = file->fileSize - printed;
-        int toPrint = (remain > BLOCK_SIZE) ? BLOCK_SIZE : remain;
+
+        int toPrint;
+
+        if (remain > BLOCK_SIZE)
+        {
+            toPrint = BLOCK_SIZE;
+        }
+        else
+        {
+            toPrint = remain;
+        }
+
         fwrite(disk[blk], 1, toPrint, stdout);
         printed += toPrint;
     }
+
     printf("\n");
 }
 

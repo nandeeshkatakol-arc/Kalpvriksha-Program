@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "commandParser.h"
+#include "parser.h"
 #include "directory.h"
 
 int main(void)

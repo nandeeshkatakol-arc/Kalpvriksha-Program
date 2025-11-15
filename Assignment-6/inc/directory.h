@@ -31,7 +31,6 @@ typedef struct FreeBlock
     struct FreeBlock *prev;
 } FreeBlock;
 
-/* global storage and lists (Option 2 naming) */
 extern unsigned char disk[NUM_BLOCKS][BLOCK_SIZE];
 extern FreeBlock *freeHead;
 extern FreeBlock *freeTail;
@@ -39,7 +38,6 @@ extern FileNode *root;
 extern FileNode *cwd;
 extern int usedBlocks;
 
-/* directory and block API */
 void setupFileSystem(void);
 void makeDirectory(const char *name);
 void listFiles(void);
@@ -56,4 +54,3 @@ void clearFileBlocks(FileNode *file);
 void cleanupFileSystem(void);
 
 #endif
-    
