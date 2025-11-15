@@ -38,19 +38,19 @@ extern FileNode *root;
 extern FileNode *cwd;
 extern int usedBlocks;
 
-void setupFileSystem(void);
+void setupFileSystem();
 void makeDirectory(const char *name);
-void listFiles(void);
+void listFiles();
 void changeDirectory(const char *name);
-void showPath(void);
+void showPath();
 void removeDirectory(const char *name);
-void showDiskInfo(void);
+void showDiskInfo();
 
 FileNode *findChild(const char *name);
-int getFreeBlock(void);
+int getFreeBlock();
 void returnBlock(int number);
 void clearFileBlocks(FileNode *file);
 
-void cleanupFileSystem(void);
+void cleanupFileSystem();
 
 #endif
