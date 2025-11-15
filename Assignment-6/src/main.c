@@ -1,41 +1,26 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "vfs.h"
-#include "parser.h"
-#include "utils.h"
+#include "commandParser.h"
+#include "directory.h"
 
-int main()
+int main(void)
 {
-    int totalBlocks = 1024;
-    int blockSize = 512;
+    setupFileSystem();
 
-    printLine();
-    printf("Compact Virtual File System Simulation\n");
-    printLine();
+    char line[512];
 
-    VFS *vfs = createVfs(totalBlocks, blockSize);
-    if (!vfs)
-    {
-        fprintf(stderr, "Failed to initialize VFS.\n");
-        return EXIT_FAILURE;
-    }
-    char input[256];
     while (1)
     {
-        printf("%s> ", vfs->cwd->name);
-
-        if (!fgets(input, sizeof(input), stdin))
+        printf("%s> ", cwd ? cwd->name : "/");
+        if (!fgets(line, sizeof(line), stdin))
         {
-            printf("\nInput error. Exiting...\n");
             break;
         }
 
-        input[strcspn(input, "\n")] = '\0';
-
-        parseCommand(vfs, input);
+        line[strcspn(line, "\n")] = '\0';
+        parseCommand(line);
     }
 
-    destroyVfs(vfs);
+    cleanupFileSystem();
     return 0;
 }
