@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "commandParser.h"
+#include "parser.h"
 
 static void trim(char *s)
 {
     char *p = s;
-    while (isspace((unsigned char)*p)) p++;
+    while (isspace((unsigned char)*p))
+    p++;
     memmove(s, p, strlen(p) + 1);
 
     size_t len = strlen(s);

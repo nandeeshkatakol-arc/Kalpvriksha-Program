@@ -32,7 +32,7 @@ static void addFreeBlockInternal(int number)
     }
 }
 
-void setupFileSystem(void)
+void setupFileSystem()
 {
     for (int i = 0; i < NUM_BLOCKS; ++i)
     {
@@ -116,7 +116,7 @@ void makeDirectory(const char *name)
     printf("Directory '%s' created successfully.\n", name);
 }
 
-void listFiles(void)
+void listFiles()
 {
     if (!cwd->firstChild)
     {
@@ -124,20 +124,20 @@ void listFiles(void)
         return;
     }
 
-    FileNode *iter = cwd->firstChild;
+    FileNode *iterator = cwd->firstChild;
     do
     {
-        if (iter->isDirectory)
+        if (iterator->isDirectory)
         {
-            printf("%s/\n", iter->name);
+            printf("%s/\n", iterator->name);
         }
         else
         {
-            printf("%s\n", iter->name);
+            printf("%s\n", iterator->name);
         }
-        iter = iter->next;
+        iterator = iterator->next;
     }
-    while (iter != cwd->firstChild);
+    while (iterator != cwd->firstChild);
 }
 
 void changeDirectory(const char *name)
@@ -167,29 +167,29 @@ void changeDirectory(const char *name)
         return;
     }
 
-    FileNode *iter = cwd->firstChild;
+    FileNode *iterator = cwd->firstChild;
     do
     {
-        if (iter->isDirectory && strcmp(iter->name, name) == 0)
+        if (iterator->isDirectory && strcmp(iterator->name, name) == 0)
         {
-            cwd = iter;
+            cwd = iterator;
             return;
         }
-        iter = iter->next;
+        iterator = iterator->next;
     }
-    while (iter != cwd->firstChild);
+    while (iterator != cwd->firstChild);
 
     printf("Directory not found.\n");
 }
 
-void showPath(void)
+void showPath()
 {
-    FileNode *iter = cwd;
+    FileNode *iterator = cwd;
     char buffer[1024] = "";
-    while (iter)
+    while (iterator)
     {
         char tmp[1024];
-        if (strcmp(iter->name, "/") == 0)
+        if (strcmp(iterator->name, "/") == 0)
         {
             if (strlen(buffer) == 0)
             {
@@ -207,16 +207,16 @@ void showPath(void)
         {
             if (strlen(buffer) == 0)
             {
-                snprintf(tmp, sizeof(tmp), "%s", iter->name);
+                snprintf(tmp, sizeof(tmp), "%s", iterator->name);
             }
             else
             {
-                snprintf(tmp, sizeof(tmp), "%s/%s", iter->name, buffer);
+                snprintf(tmp, sizeof(tmp), "%s/%s", iterator->name, buffer);
             }
             strncpy(buffer, tmp, sizeof(buffer) - 1);
             buffer[sizeof(buffer) - 1] = '\0';
         }
-        iter = iter->parent;
+        iterator = iterator->parent;
     }
 
     if (strlen(buffer) > 1 && buffer[strlen(buffer) - 1] == '/')
@@ -280,21 +280,21 @@ FileNode *findChild(const char *name)
         return NULL;
     }
 
-    FileNode *iter = cwd->firstChild;
+    FileNode *iterator = cwd->firstChild;
     do
     {
-        if (strcmp(iter->name, name) == 0)
+        if (strcmp(iterator->name, name) == 0)
         {
-            return iter;
+            return iterator;
         }
-        iter = iter->next;
+        iterator = iterator->next;
     }
-    while (iter != cwd->firstChild);
+    while (iterator != cwd->firstChild);
 
     return NULL;
 }
 
-int getFreeBlock(void)
+int getFreeBlock()
 {
     if (!freeHead)
     {
@@ -389,7 +389,7 @@ static void freeFileNodesInternal(FileNode *node)
     free(node);
 }
 
-static void freeFreeBlocksInternal(void)
+static void freeFreeBlocksInternal()
 {
     FreeBlock *cur = freeHead;
     while (cur)
@@ -402,7 +402,7 @@ static void freeFreeBlocksInternal(void)
     usedBlocks = 0;
 }
 
-void cleanupFileSystem(void)
+void cleanupFileSystem()
 {
     freeFileNodesInternal(root);
     freeFreeBlocksInternal();
@@ -410,7 +410,7 @@ void cleanupFileSystem(void)
     printf("Memory released. Exiting.\n");
 }
 
-void showDiskInfo(void)
+void showDiskInfo()
 {
     int total = NUM_BLOCKS;
     int used = usedBlocks;
