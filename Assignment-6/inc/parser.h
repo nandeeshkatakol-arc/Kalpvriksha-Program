@@ -1,5 +1,5 @@
-#ifndef COMMANDPARSER_H
-#define COMMANDPARSER_H
+#ifndef PARSER_H
+#define PARSER_H
 
 #include "directory.h"
 #include "file.h"

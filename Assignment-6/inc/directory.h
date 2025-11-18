@@ -46,11 +46,10 @@ void showPath();
 void removeDirectory(const char *name);
 void showDiskInfo();
 
-FileNode *findChild(const char *name);
+FileNode *findChild(FileNode *directory, const char *name);
 int getFreeBlock();
 void returnBlock(int number);
 void clearFileBlocks(FileNode *file);
-
 void cleanupFileSystem();
 
 #endif

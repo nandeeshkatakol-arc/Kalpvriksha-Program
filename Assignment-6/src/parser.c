@@ -20,7 +20,6 @@ static void trim(char *s)
         s[len - 1] = '\0';
         len--;
     }
-    return;
 }
 
 void parseCommand(char *line)
@@ -213,5 +212,4 @@ void parseCommand(char *line)
             printf("Unknown command: %s\n", cmd);
         }
     }
-    return;
 }

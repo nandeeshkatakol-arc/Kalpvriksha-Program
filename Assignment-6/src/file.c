@@ -2,20 +2,20 @@
 
 void createFile(const char *name)
 {
-    int ok = 1;
+    int isValid = 1;
     if (!name)
     {
-        ok = 0;
+        isValid = 0;
     }
-    if (ok)
+    if (isValid)
     {
-        if (findChild(name) != NULL)
+        if (findChild(cwd,name) != NULL)
         {
             printf("Name '%s' already exists in current directory.\n", name);
-            ok = 0;
+            isValid = 0;
         }
     }
-    if (ok)
+    if (isValid)
     {
         FileNode *node = (FileNode *)calloc(1, sizeof(FileNode));
         if (!node)
@@ -56,155 +56,124 @@ void createFile(const char *name)
         }
         printf("File '%s' created successfully.\n", name);
     }
-    return;
 }
 
 void writeFile(const char *name, const char *data)
 {
-    int ok = 1;
-    FileNode *file = NULL;
-    if (!name)
+    if (!name || !data)
     {
-        ok = 0;
+        printf("Invalid file name or data.\n");
+        return;
     }
-    if (ok)
+
+    FileNode *fileNode = findChild(cwd, name);
+    if (!fileNode)
     {
-        file = findChild(name);
-        if (!file)
-        {
-            printf("File not found.\n");
-            ok = 0;
-        }
+        printf("File not found.\n");
+        return;
     }
-    if (ok)
+
+    if (fileNode->isDirectory)
     {
-        if (file->isDirectory)
-        {
-            printf("'%s' is a directory, not a file.\n", name);
-            ok = 0;
-        }
+        printf("'%s' is a directory, not a file.\n", name);
+        return;
     }
-    if (ok)
+
+    int dataSize = (int)strlen(data);
+    int requiredBlocks = (dataSize + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+    if (requiredBlocks > MAX_BLOCKS_PER_FILE)
     {
-        if (!data)
-        {
-            printf("No data provided.\n");
-            ok = 0;
-        }
+        printf("File too large. Max %d blocks allowed.\n", MAX_BLOCKS_PER_FILE);
+        return;
     }
-    if (ok)
+
+    int freeBlocksAvailable = NUM_BLOCKS - usedBlocks;
+    if (freeBlocksAvailable < requiredBlocks)
     {
-        int dataSize = (int)strlen(data);
-        int needed = (dataSize + BLOCK_SIZE - 1) / BLOCK_SIZE;
-        if (needed > MAX_BLOCKS_PER_FILE)
+        printf("Not enough space on disk.\n");
+        return;
+    }
+
+    if (fileNode->numBlocks > 0)
+        clearFileBlocks(fileNode);
+
+    int allocatedBlocks = 0;
+    const unsigned char *dataPtr = (const unsigned char *)data;
+    int bytesRemaining = dataSize;
+
+    for (int iterator = 0; iterator < requiredBlocks; ++iterator)
+    {
+        int blockIndex = getFreeBlock();
+        if (blockIndex == -1)
         {
-            printf("File too large. Max %d blocks allowed.\n", MAX_BLOCKS_PER_FILE);
-            ok = 0;
-        }
-        if (ok)
-        {
-            int freeAvail = NUM_BLOCKS - usedBlocks;
-            if (freeAvail < needed)
+            for (int restoreIndex = 0; restoreIndex < allocatedBlocks; ++restoreIndex)
             {
-                printf("Not enough space on disk.\n");
-                ok = 0;
+                returnBlock(fileNode->blockNumbers[restoreIndex]);
+                fileNode->blockNumbers[restoreIndex] = -1;
             }
+
+            fileNode->numBlocks = 0;
+            fileNode->fileSize = 0;
+
+            printf("Write failed. Not enough free blocks.\n");
+            return;
         }
-        if (ok)
-        {
-            if (file->numBlocks > 0)
-            {
-                clearFileBlocks(file);
-            }
-            int allocated = 0;
-            const unsigned char *ptr = (const unsigned char *)data;
-            int remaining = dataSize;
-            {
-                int i;
-                for (i = 0; i < needed; ++i)
-                {
-                    int blk = getFreeBlock();
-                    if (blk == -1)
-                    {
-                        int j;
-                        for (j = 0; j < allocated; ++j)
-                        {
-                            returnBlock(file->blockNumbers[j]);
-                            file->blockNumbers[j] = -1;
-                        }
-                        file->numBlocks = 0;
-                        file->fileSize = 0;
-                        printf("Error: not enough free blocks (during write).\n");
-                        ok = 0;
-                        break;
-                    }
-                    {
-                        int toWrite;
-                        if (remaining > BLOCK_SIZE)
-                        {
-                            toWrite = BLOCK_SIZE;
-                        }
-                        else
-                        {
-                            toWrite = remaining;
-                        }
-                        memcpy(disk[blk], ptr, toWrite);
-                        if (toWrite < BLOCK_SIZE)
-                        {
-                            memset(disk[blk] + toWrite, 0, BLOCK_SIZE - toWrite);
-                        }
-                        file->blockNumbers[i] = blk;
-                        ptr += toWrite;
-                        remaining -= toWrite;
-                        allocated++;
-                    }
-                }
-            }
-            if (ok)
-            {
-                file->numBlocks = allocated;
-                file->fileSize = dataSize;
-                printf("Data written successfully (size=%d bytes).\n", dataSize);
-            }
-        }
+
+        int bytesToWrite = (bytesRemaining > BLOCK_SIZE) ? BLOCK_SIZE : bytesRemaining;
+
+        memcpy(disk[blockIndex], dataPtr, bytesToWrite);
+
+        if (bytesToWrite < BLOCK_SIZE)
+            memset(disk[blockIndex] + bytesToWrite, 0, BLOCK_SIZE - bytesToWrite);
+
+        fileNode->blockNumbers[iterator] = blockIndex;
+
+        dataPtr += bytesToWrite;
+        bytesRemaining -= bytesToWrite;
+        allocatedBlocks++;
     }
-    return;
+
+    fileNode->numBlocks = allocatedBlocks;
+    fileNode->fileSize = dataSize;
+
+    printf("Data written successfully (size=%d bytes).\n", dataSize);
 }
 
 void readFile(const char *name)
 {
-    int ok = 1;
+    int isValid = 1;
     FileNode *file = NULL;
     if (!name)
     {
-        ok = 0;
+        isValid = 0;
     }
-    if (ok)
+    if (isValid)
     {
-        file = findChild(name);
+        file = findChild(cwd,name);
         if (!file)
         {
             printf("File not found.\n");
-            ok = 0;
+            isValid = 0;
         }
     }
-    if (ok)
+    if (isValid)
     {
         if (file->isDirectory)
         {
             printf("'%s' is a directory, not a file.\n", name);
-            ok = 0;
+            isValid = 0;
         }
     }
-    if (ok)
+    if (isValid)
     {
         if (file->numBlocks == 0)
         {
             printf("File is empty.\n");
-            ok = 0;
+            isValid = 0;
         }
     }
-    if (ok)
+    if (isValid)
     {
         int printed = 0;
         int i;
@@ -226,35 +195,34 @@ void readFile(const char *name)
         }
         printf("\n");
     }
-    return;
 }
 
 void deleteFile(const char *name)
 {
-    int ok = 1;
+    int isValid = 1;
     FileNode *fileToDelete = NULL;
     if (!name)
     {
-        ok = 0;
+        isValid = 0;
     }
-    if (ok)
+    if (isValid)
     {
-        fileToDelete = findChild(name);
+        fileToDelete = findChild(cwd,name);
         if (!fileToDelete)
         {
             printf("File not found.\n");
-            ok = 0;
+            isValid = 0;
         }
     }
-    if (ok)
+    if (isValid)
     {
         if (fileToDelete->isDirectory)
         {
             printf("'%s' is a directory. Use rmdir instead.\n", name);
-            ok = 0;
+            isValid = 0;
         }
     }
-    if (ok)
+    if (isValid)
     {
         int i;
         for (i = 0; i < fileToDelete->numBlocks; ++i)
@@ -286,5 +254,4 @@ void deleteFile(const char *name)
         free(fileToDelete);
         printf("File '%s' deleted successfully.\n", name);
     }
-    return;
 }
