@@ -2,11 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "app.h"
+#include "ODI_PlayerAnalyzer.h"
 #include "Players_data.h"
 
 Team teamList[MAX_TEAMS];
 int teamListCount = 0;
+
+typedef enum
+{
+    MENU_EXIT = 0,
+    MENU_DISPLAY_TEAM_PLAYERS = 1,
+    MENU_DISPLAY_TEAMS_BY_AVG_SR = 2,
+    MENU_TOP_K_PLAYERS = 3,
+    MENU_GLOBAL_ROLE_DISPLAY = 4,
+    MENU_ADD_NEW_PLAYER = 5
+} MenuOption;
 
 typedef struct
 {
@@ -35,31 +45,35 @@ ROLE getRoleEnum(const char *rolestr)
 
 static int getTeamIndexFromHeader(const char *teamName)
 {
-    for(int i = 0; i < teamCount; i++)
+    int result = -1;
+
+    for (int iterator = 0; iterator < teamCount; iterator++)
     {
-        if(strcmp(teams[i], teamName) == 0)
+        if (strcmp(teams[iterator], teamName) == 0)
         {
-            return i;
+            result = iterator;
+            break;
         }
     }
-    return -1;
+
+    return result;
 }
 
 void initSystem()
 {
     teamListCount = teamCount;
 
-    for(int i = 0; i < teamListCount; i++)
+    for(int iterator = 0; iterator < teamListCount; iterator++)
     {
-        strcpy(teamList[i].name, teams[i]);
-        teamList[i].teamID = i + 1;
-        teamList[i].playerCount = 0;
-        teamList[i].avgStrikeRate = 0.0f;
+        strcpy(teamList[iterator].name, teams[iterator]);
+        teamList[iterator].teamID = iterator + 1;
+        teamList[iterator].playerCount = 0;
+        teamList[iterator].avgStrikeRate = 0.0f;
     }
 
-    for (int i = 0; i < playerCount; i++)
+    for (int iterator = 0; iterator < playerCount; iterator++)
     {
-        int teamIndex = getTeamIndexFromHeader(players[i].team);
+        int teamIndex = getTeamIndexFromHeader(players[iterator].team);
 
         if(teamIndex < 0 || teamIndex >= teamListCount)
             continue;
@@ -69,74 +83,85 @@ void initSystem()
 
         playerModel *p = &teamList[teamIndex].players[teamList[teamIndex].playerCount++];
 
-        p->id = players[i].id;
-        strcpy(p->name, players[i].name);
+        p->id = players[iterator].id;
+        strcpy(p->name, players[iterator].name);
         p->teamID = teamList[teamIndex].teamID;
         
-        p->role = getRoleEnum(players[i].role);
+        p->role = getRoleEnum(players[iterator].role);
 
-        p->totalRuns = players[i].totalRuns;
-        p->battingAverage = players[i].battingAverage;
-        p->strikeRate = players[i].strikeRate;
-        p->wickets = players[i].wickets;
-        p->economyRate = players[i].economyRate;
+        p->totalRuns = players[iterator].totalRuns;
+        p->battingAverage = players[iterator].battingAverage;
+        p->strikeRate = players[iterator].strikeRate;
+        p->wickets = players[iterator].wickets;
+        p->economyRate = players[iterator].economyRate;
         
         p->performanceIndex = computePerformanceIndex(p);
     }
 
-    for (int i = 0; i < teamListCount; i++)
+    for (int iterator = 0; iterator < teamListCount; iterator++)
     {
-        computeTeamAvgStrikeRate(i);
+        computeTeamAvgStrikeRate(iterator);
     }
-    for (int i = 0; i < teamListCount; i++)
+    for (int iterator = 0; iterator < teamListCount; iterator++)
     {
-        sortTeamPlayers(i);
+        sortTeamPlayers(iterator);
     }
 
     printf("System initialized with %d teams and %d players loaded.\n",
             teamListCount, playerCount);         
 }
 
-float computePerformanceIndex(playerModel *p)
+float computePerformanceIndex(const playerModel *p)
 {
+    float result = 0.0f;
+
     float battingPI = (p->battingAverage * p->strikeRate) / 100.0f;
     float bowlingPI = (p->wickets * 2.0f) + (100.0f - p->economyRate);
 
-    switch(p->role)
+    switch (p->role)
     {
         case ROLE_BATSMAN:
-            return battingPI; 
+            result = battingPI;
+            break;
 
         case ROLE_BOWLER:
-            return bowlingPI;
+            result = bowlingPI;
+            break;
 
         case ROLE_ALLROUNDER:
-            return battingPI + (p->wickets * 2.0f);
-        
-        default:
-            printf("\nInvalid player type\n");
+            result = battingPI + (p->wickets * 2.0f);
+            break;
 
+        default:
+            break;
     }
-     return 0.0f;
+
+    return result;
 }
 
 void computeTeamAvgStrikeRate(int teamIndex)
 {
     Team *t = &teamList[teamIndex];
 
-    if (t->playerCount == 0) 
+    float avg = 0.0f;
+    float sum = 0.0f;
+    int count = t->playerCount;
+
+    if (count > 0)
     {
-        t->avgStrikeRate = 0;
-        return;
+        for (int iterator = 0; iterator < count; iterator++)
+        {
+            sum += t->players[iterator].strikeRate;
+        }
+        avg = sum / (float)count;
+    }
+    else
+    {
+        avg = 0.0f;
     }
 
-    float sum = 0;
-    for (int i = 0; i < t->playerCount; i++)
-    {
-        sum += t->players[i].strikeRate;
-    }
-
-    t->avgStrikeRate = sum / t->playerCount;
+    t->avgStrikeRate = avg;
+    return;
 }
 
 void sortTeamsByAvgStrikeRate()
@@ -175,43 +200,50 @@ void sortTeamPlayers(int teamIndex)
 
 void displayTopKPlayers(int teamIndex, ROLE role, int K)
 {
-    if(teamIndex < 0 || teamIndex >= teamListCount)
+    int valid = 1; 
+    if (teamIndex < 0 || teamIndex >= teamListCount)
     {
+        valid = 0;
         printf("Invalid team index!\n");
-        return;
     }
 
-    Team *t = &teamList[teamIndex];
-    printf("\nTop %d ", K);
-    if (role == ROLE_BATSMAN)
+    if (valid && K <= 0)
     {
-        printf("Batsmen");
-    }     
-    else if (role == ROLE_BOWLER)
-    {
-        printf("Bowlers");
-    }  
-    else
-    {
-        printf("All-Rounders");
+        valid = 0;
+        printf("Invalid K (must be > 0).\n");
     }
-    printf(" of Team %s:\n", t->name);
 
-    int count = 0;
-    for ( int i = 0; i < t->playerCount && count <= K; i++)
+    if (valid)
     {
-        if(t->players[i].role == role)
+        Team *t = &teamList[teamIndex];
+        printf("\nTop %d ", K);
+        if (role == ROLE_BATSMAN)
+            printf("Batsmen");
+        else if (role == ROLE_BOWLER)
+            printf("Bowlers");
+        else
+            printf("All-Rounders");
+
+        printf(" of Team %s:\n", t->name);
+
+        int count = 0;
+        for (int i = 0; i < t->playerCount && count < K; i++)
         {
-            playerModel *p = &t->players[i];
-            printf("%d  %-20s  PI: %.2f  Runs:%d  SR:%.1f  WK:%d\n",p->id, p->name, p->performanceIndex,p->totalRuns, p->strikeRate, p->wickets);
-
-            count++;
+            if (t->players[i].role == role)
+            {
+                playerModel *p = &t->players[i];
+                printf("%d  %-20s  PI: %.2f  Runs:%d  SR:%.1f  WK:%d\n",
+                       p->id, p->name, p->performanceIndex, p->totalRuns, p->strikeRate, p->wickets);
+                count++;
+            }
+        }
+        if (count == 0)
+        {
+            printf("No players of this role found in this team.\n");
         }
     }
-    if(count == 0)
-    {
-        printf("No players of this role found in this team.\n");
-    }   
+
+    return;
 }
 
 void heapSwap(HeapNode *a, HeapNode *b)
@@ -221,11 +253,11 @@ void heapSwap(HeapNode *a, HeapNode *b)
     *b = temp;
 }
 
-void heapifyDown(HeapNode heap[], int size, int i)
+void heapifyDown(HeapNode heap[], int size, int currentIndex)
 {
-    int largest = i;
-    int left = 2*i+1;
-    int right = 2*i+2;
+    int largest = currentIndex;
+    int left = 2*currentIndex+1;
+    int right = 2*currentIndex+2;
 
     if(left < size && heap[left].pi > heap[largest].pi)
     {
@@ -235,9 +267,9 @@ void heapifyDown(HeapNode heap[], int size, int i)
     {
         largest = right;
     }
-    if(largest != i)
+    if(largest != currentIndex)
     {
-        heapSwap(&heap[i], &heap[largest]);
+        heapSwap(&heap[currentIndex], &heap[largest]);
         heapifyDown(heap, size, largest);
     }
 }
@@ -268,9 +300,9 @@ int buildInitialHeap(HeapNode heap[], ROLE role)
             heapSize++;
         }
     }
-    for (int i = heapSize / 2 - 1; i >= 0; i--)
+    for (int iterator = heapSize / 2 - 1; iterator >= 0; iterator--)
     {
-        heapifyDown(heap, heapSize, i);
+        heapifyDown(heap, heapSize, iterator);
     }
     return heapSize;
 
@@ -284,29 +316,20 @@ HeapNode heapPop(HeapNode heap[], int *size)
     return top;
 }
 
-int binarySearchTeamByName(const char *teamName)
+int findTeamByName(const char *teamName)
 {
-    int low = 0, high = teamListCount - 1;
+    int result = -1;
 
-    while (low <= high)
+    for (int iterator = 0; iterator < teamListCount; iterator++)
     {
-        int mid = (low + high) / 2;
-        int cmp = strcmp(teamList[mid].name, teamName);
-
-        if (cmp == 0)
+        if (strcmp(teamList[iterator].name, teamName) == 0)
         {
-            return mid;
-        }
-        else if (cmp < 0)
-        {
-            low = mid + 1;
-        }
-        else
-        {
-            high = mid - 1;
+            result = iterator;
+            break;
         }
     }
-    return -1; 
+
+    return result;
 }
 
 void displayPlayersByRoleHeap(ROLE role)
@@ -314,38 +337,47 @@ void displayPlayersByRoleHeap(ROLE role)
     printf("\n=== All Players of Role %d (Heap Merge) ===\n", role);
 
     HeapNode heap[MAX_TEAMS];
-    int size = buildInitialHeap(heap, role);
+    int heapSize = buildInitialHeap(heap, role);
 
-    while (size > 0)
+    while (heapSize > 0)
     {
-        HeapNode top = heapPop(heap, &size);
+        HeapNode topNode = heapPop(heap, &heapSize);
 
-        int t = top.teamIndex;
-        int i = top.playerIndex;
+        int teamIndex = topNode.teamIndex;
+        int playerIndex = topNode.playerIndex;
 
-        playerModel *p = &teamList[t].players[i];
+        playerModel *player = &teamList[teamIndex].players[playerIndex];
 
-        printf("%d %-20s Team:%s PI:%.2f SR:%.1f WK:%d\n",p->id, p->name, teamList[t].name,p->performanceIndex, p->strikeRate, p->wickets);
+        printf("%d %-20s Team:%s PI:%.2f SR:%.1f WK:%d\n",
+               player->id, player->name,
+               teamList[teamIndex].name,
+               player->performanceIndex,
+               player->strikeRate,
+               player->wickets);
 
-        int next = i + 1;
+        int nextPlayerIndex = playerIndex + 1;
 
-        while (next < teamList[t].playerCount &&
-               teamList[t].players[next].role != role)
+        while (nextPlayerIndex < teamList[teamIndex].playerCount &&
+               teamList[teamIndex].players[nextPlayerIndex].role != role)
         {
-            next++;
+            nextPlayerIndex++;
+        }
+        
+        if (nextPlayerIndex < teamList[teamIndex].playerCount)
+        {
+            heap[heapSize].teamIndex = teamIndex;
+            heap[heapSize].playerIndex = nextPlayerIndex;
+            heap[heapSize].pi = teamList[teamIndex].players[nextPlayerIndex].performanceIndex;
+            heapSize++;
         }
 
-        if (next < teamList[t].playerCount)
+        for (int heapIndex = heapSize / 2 - 1; heapIndex >= 0; heapIndex--)
         {
-            heap[size].teamIndex = t;
-            heap[size].playerIndex = next;
-            heap[size].pi = teamList[t].players[next].performanceIndex;
-            size++;
+            heapifyDown(heap, heapSize, heapIndex);
         }
-        for (int j = size/2 - 1; j >= 0; j--)
-            heapifyDown(heap, size, j);
     }
 }
+
 void addNewPlayer()
 {
     playerModel newP;
@@ -373,7 +405,7 @@ void addNewPlayer()
     printf("Enter Team Name: ");
     scanf(" %[^\n]", teamName);
 
-    int teamIndex = binarySearchTeamByName(teamName);
+    int teamIndex = findTeamByName(teamName);
     if (teamIndex == -1)
     {
         printf("Team not found!\n");
@@ -466,55 +498,58 @@ void handleChoice()
     int ch;
     scanf("%d", &ch);
 
-    switch (ch)
+switch ((MenuOption)ch)
+{
+    case MENU_DISPLAY_TEAM_PLAYERS:
     {
-        case 1:
-        {
-            printf("Enter team index (0-9): ");
-            int t;
-            scanf("%d", &t);
-            displayTeamPlayers(t);
-            break;
-        }
-
-        case 2:
-            displayTeamsByAvgSR();
-            break;
-
-        case 3:
-        {
-            int t, role, K;
-            printf("Enter team index (0-9): ");
-            scanf("%d", &t);
-        
-            printf("Enter role (1=Batsman, 2=Bowler, 3=All-rounder): ");
-            scanf("%d", &role);
-        
-            printf("Enter K: ");
-            scanf("%d", &K);
-        
-            displayTopKPlayers(t, (ROLE)role, K);
-            break;
-        }
-
-        case 4:
-        {
-            int role;
-            printf("Enter role (1=Batsman,2=Bowler,3=All-rounder): ");
-            scanf("%d", &role);
-        
-            displayPlayersByRoleHeap((ROLE)role);
-            break;
-        }
-        case 5:
-            addNewPlayer();
-            break;
-
-        case 0:
-            printf("Exiting...\n");
-            exit(0);
-
-        default:
-            printf("Invalid choice.\n");
+        printf("Enter team index (0-9): ");
+        int t;
+        scanf("%d", &t);
+        displayTeamPlayers(t);
+        break;
     }
+
+    case MENU_DISPLAY_TEAMS_BY_AVG_SR:
+        displayTeamsByAvgSR();
+        break;
+
+    case MENU_TOP_K_PLAYERS:
+    {
+        int t, role, K;
+        printf("Enter team index (0-9): ");
+        scanf("%d", &t);
+
+        printf("Enter role (1=Batsman, 2=Bowler, 3=All-rounder): ");
+        scanf("%d", &role);
+
+        printf("Enter K: ");
+        scanf("%d", &K);
+
+        displayTopKPlayers(t, (ROLE)role, K);
+        break;
+    }
+
+    case MENU_GLOBAL_ROLE_DISPLAY:
+    {
+        int role;
+        printf("Enter role (1=Batsman,2=Bowler,3=All-rounder): ");
+        scanf("%d", &role);
+
+        displayPlayersByRoleHeap((ROLE)role);
+        break;
+    }
+
+    case MENU_ADD_NEW_PLAYER:
+        addNewPlayer();
+        break;
+
+    case MENU_EXIT:
+        printf("Exiting...\n");
+        exit(0);
+
+    default:
+        printf("Invalid choice.\n");
+        break;
+}
+
 }

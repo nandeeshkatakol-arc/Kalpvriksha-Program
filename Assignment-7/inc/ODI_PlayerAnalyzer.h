@@ -49,13 +49,13 @@ void handleChoice();
 void displayTeamPlayers(int teamIndex);
 void displayTeamsByAvgSR();
 
-float computePerformanceIndex(playerModel *p);
+float computePerformanceIndex(const playerModel *p);
 void computeTeamAvgStrikeRate(int teamIndex);
 void sortTeamsByAvgStrikeRate();
 void sortTeamPlayers(int teamIndex);
 void displayTopKPlayers(int teamIndex, ROLE role, int K);
 void addNewPlayer();
-int binarySearchTeamByName(const char *teamName);
+int findTeamByName(const char *teamName);
 
 
 
