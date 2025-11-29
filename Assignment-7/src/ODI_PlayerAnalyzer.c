@@ -141,17 +141,17 @@ float computePerformanceIndex(const playerModel *p)
 
 void computeTeamAvgStrikeRate(int teamIndex)
 {
-    Team *t = &teamList[teamIndex];
+    Team *team = &teamList[teamIndex];
 
     float avg = 0.0f;
     float sum = 0.0f;
-    int count = t->playerCount;
+    int count = team->playerCount;
 
     if (count > 0)
     {
         for (int iterator = 0; iterator < count; iterator++)
         {
-            sum += t->players[iterator].strikeRate;
+            sum += team->players[iterator].strikeRate;
         }
         avg = sum / (float)count;
     }
@@ -160,21 +160,21 @@ void computeTeamAvgStrikeRate(int teamIndex)
         avg = 0.0f;
     }
 
-    t->avgStrikeRate = avg;
+    team->avgStrikeRate = avg;
     return;
 }
 
 void sortTeamsByAvgStrikeRate()
 {
-    for(int i = 0; i < teamListCount-1; i++)
+    for(int iterator1 = 0; iterator1 < teamListCount-1; iterator1++)
     {
-        for(int j = i+1; j < teamListCount; j++)
+        for(int iterator2 = iterator1+1; iterator2 < teamListCount; iterator2++)
         {
-            if(teamList[j].avgStrikeRate > teamList[i].avgStrikeRate)
+            if(teamList[iterator2].avgStrikeRate > teamList[iterator1].avgStrikeRate)
             {
-                Team temp = teamList[i];
-                teamList[i] = teamList[j];
-                teamList[j] = temp;
+                Team temp = teamList[iterator1];
+                teamList[iterator1] = teamList[iterator2];
+                teamList[iterator2] = temp;
             }
         }
     }
@@ -183,16 +183,16 @@ void sortTeamsByAvgStrikeRate()
 
 void sortTeamPlayers(int teamIndex)
 {
-     Team *t = &teamList[teamIndex];
-     for (int i = 0; i < t->playerCount-1; i++)
+     Team *team = &teamList[teamIndex];
+     for (int iterator1 = 0; iterator1 < team->playerCount-1; iterator1++)
      {
-        for(int j = i+1; j < t->playerCount; j++)
+        for(int iterator2 = iterator1+1; iterator2 < team->playerCount; iterator2++)
         {
-            if (t->players[j].performanceIndex > t->players[i].performanceIndex)
+            if (team->players[iterator2].performanceIndex > team->players[iterator1].performanceIndex)
             {
-                playerModel temp = t->players[i];
-                t->players[i] = t->players[j];
-                t->players[j] = temp;
+                playerModel temp = team->players[iterator1];
+                team->players[iterator1] = team->players[iterator2];
+                team->players[iterator2] = temp;
             }
         }
      }
@@ -380,23 +380,23 @@ void displayPlayersByRoleHeap(ROLE role)
 
 void addNewPlayer()
 {
-    playerModel newP;
+    playerModel newPlayer;
     char teamName[50];
     char roleStr[20];
 
     printf("\nEnter Player ID (<=1500): ");
-    scanf("%d", &newP.id);
+    scanf("%d", &newPlayer.id);
 
-    if (newP.id > 1500)
+    if (newPlayer.id > 1500)
     {
         printf("Invalid ID. Must be <=1500.\n");
         return;
     }
 
     printf("Enter Player Name: ");
-    scanf(" %[^\n]", newP.name);
+    scanf(" %[^\n]", newPlayer.name);
 
-    if (strlen(newP.name) > 50)
+    if (strlen(newPlayer.name) > 50)
     {
         printf("Name too long!\n");
         return;
@@ -421,27 +421,27 @@ void addNewPlayer()
     printf("Enter Role (Batsman/Bowler/All-rounder): ");
     scanf(" %[^\n]", roleStr);
 
-    newP.role = getRoleEnum(roleStr);
+    newPlayer.role = getRoleEnum(roleStr);
 
     printf("Enter Total Runs: ");
-    scanf("%d", &newP.totalRuns);
+    scanf("%d", &newPlayer.totalRuns);
 
     printf("Enter Batting Average: ");
-    scanf("%f", &newP.battingAverage);
+    scanf("%f", &newPlayer.battingAverage);
 
     printf("Enter Strike Rate: ");
-    scanf("%f", &newP.strikeRate);
+    scanf("%f", &newPlayer.strikeRate);
 
     printf("Enter Wickets: ");
-    scanf("%d", &newP.wickets);
+    scanf("%d", &newPlayer.wickets);
 
     printf("Enter Economy Rate: ");
-    scanf("%f", &newP.economyRate);
+    scanf("%f", &newPlayer.economyRate);
 
-    newP.performanceIndex = computePerformanceIndex(&newP);
+    newPlayer.performanceIndex = computePerformanceIndex(&newPlayer);
 
     int pos = teamList[teamIndex].playerCount;
-    teamList[teamIndex].players[pos] = newP;
+    teamList[teamIndex].players[pos] = newPlayer;
     teamList[teamIndex].playerCount++;
 
     computeTeamAvgStrikeRate(teamIndex);
@@ -458,11 +458,11 @@ void displayTeamPlayers(int teamIndex)
         return;
     }
 
-    Team *t = &teamList[teamIndex];
-    for(int i = 0; i < t->playerCount; i++)
+    Team *team = &teamList[teamIndex];
+    for(int iterator = 0; iterator < team->playerCount; iterator++)
     {
-        playerModel *p = &t->players[i];
-        printf("%d  %-25s  Role: %d  SR: %.2f  WK: %d  PI: %.2f\n",p->id, p->name, p->role, p->strikeRate, p->wickets, p->performanceIndex);
+        playerModel *player = &team->players[iterator];
+        printf("%d  %-25s  Role: %d  SR: %.2f  WK: %d  PI: %.2f\n",player->id, player->name, player->role, player->strikeRate, player->wickets, player->performanceIndex);
     }
 }
 
@@ -472,12 +472,9 @@ void displayTeamsByAvgSR()
 
     printf("\n===== Teams Sorted by Average Strike Rate =====\n\n");
 
-    for (int i = 0; i < teamListCount; i++)
+    for (int iterator = 0; iterator < teamListCount; iterator++)
     {
-        printf("%d. %-15s  Avg SR = %.2f\n",
-               i,
-               teamList[i].name,
-               teamList[i].avgStrikeRate);
+        printf("%d. %-15s  Avg SR = %.2f\n",iterator,teamList[iterator].name,teamList[iterator].avgStrikeRate);
     }
 }
 
@@ -495,17 +492,17 @@ void showMenu()
 
 void handleChoice()
 {
-    int ch;
-    scanf("%d", &ch);
+    int choice;
+    scanf("%d", &choice);
 
-switch ((MenuOption)ch)
+switch ((MenuOption)choice)
 {
     case MENU_DISPLAY_TEAM_PLAYERS:
     {
         printf("Enter team index (0-9): ");
-        int t;
-        scanf("%d", &t);
-        displayTeamPlayers(t);
+        int teamIndex;
+        scanf("%d", &teamIndex);
+        displayTeamPlayers(teamIndex);
         break;
     }
 
@@ -515,9 +512,9 @@ switch ((MenuOption)ch)
 
     case MENU_TOP_K_PLAYERS:
     {
-        int t, role, K;
+        int teamIndex, role, K;
         printf("Enter team index (0-9): ");
-        scanf("%d", &t);
+        scanf("%d", &teamIndex);
 
         printf("Enter role (1=Batsman, 2=Bowler, 3=All-rounder): ");
         scanf("%d", &role);
@@ -525,7 +522,7 @@ switch ((MenuOption)ch)
         printf("Enter K: ");
         scanf("%d", &K);
 
-        displayTopKPlayers(t, (ROLE)role, K);
+        displayTopKPlayers(teamIndex, (ROLE)role, K);
         break;
     }
 
