@@ -2,42 +2,55 @@
 #include <string.h>
 #include "LRUcache.h"
 
-int main()
+int main(void)
 {
     LRUCache *cacheObject = NULL;
-    char command[50];
-    int key = 0;
-    int capacity = 0;
-    char value[200];
+    char commandBuffer[64];
+    int keyValue = 0;
+    int capacityValue = 0;
+    char valueBuffer[2048];
     char *returnedValue = NULL;
-    int shouldContinue = 1;
+    int continueRunning = 1;
 
-    while (shouldContinue)
+    while (continueRunning && scanf("%63s", commandBuffer) == 1)
     {
-        if (scanf("%49s", command) != 1) break;
-        if (strcmp(command, "createCache") == 0)
+        if (strcmp(commandBuffer, "createCache") == 0)
         {
-            if (scanf("%d", &capacity) == 1)
-            {
-                if (cacheObject != NULL) freeCache(cacheObject);
-                cacheObject = createCache(capacity);
-            }
-        }
-        else if (strcmp(command, "put") == 0)
-        {
-            if (scanf("%d %199s", &key, value) == 2)
-            {
-                if (cacheObject != NULL) putValue(cacheObject, key, value);
-            }
-        }
-        else if (strcmp(command, "get") == 0)
-        {
-            if (scanf("%d", &key) == 1)
+            if (scanf("%d", &capacityValue) == 1)
             {
                 if (cacheObject != NULL)
                 {
-                    returnedValue = getValue(cacheObject, key);
-                    printf("%s\n", returnedValue);
+                    freeCache(cacheObject);
+                    cacheObject = NULL;
+                }
+                cacheObject = createCache(capacityValue);
+            }
+        }
+        else if (strcmp(commandBuffer, "put") == 0)
+        {
+            if (scanf("%d %2047s", &keyValue, valueBuffer) == 2)
+            {
+                if (cacheObject != NULL)
+                {
+                    putValue(cacheObject, keyValue, valueBuffer);
+                }
+            }
+        }
+        else if (strcmp(commandBuffer, "get") == 0)
+        {
+            if (scanf("%d", &keyValue) == 1)
+            {
+                if (cacheObject != NULL)
+                {
+                    returnedValue = getValue(cacheObject, keyValue);
+                    if (returnedValue != NULL)
+                    {
+                        printf("%s\n", returnedValue);
+                    }
+                    else
+                    {
+                        printf("NULL\n");
+                    }
                 }
                 else
                 {
@@ -45,12 +58,23 @@ int main()
                 }
             }
         }
-        else if (strcmp(command, "exit") == 0)
+        else if (strcmp(commandBuffer, "exit") == 0)
         {
-            shouldContinue = 0;
+            continueRunning = 0;
+        }
+        else
+        {
+            int ch = 0;
+            while ((ch = getchar()) != '\n' && ch != EOF)
+            {
+            }
         }
     }
 
-    if (cacheObject != NULL) freeCache(cacheObject);
+    if (cacheObject != NULL)
+    {
+        freeCache(cacheObject);
+        cacheObject = NULL;
+    }
     return 0;
 }
