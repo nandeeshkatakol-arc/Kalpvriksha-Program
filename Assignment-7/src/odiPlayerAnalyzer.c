@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ODI_PlayerAnalyzer.h"
+#include "odiPlayerAnalyzer.h"
 #include "Players_data.h"
 
 Team teamList[MAX_TEAMS];

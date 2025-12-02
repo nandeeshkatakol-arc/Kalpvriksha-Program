@@ -1,4 +1,4 @@
-#include "ODI_PlayerAnalyzer.h"
+#include "odiPlayerAnalyzer.h"
 #include <stdio.h>
 
 int main()

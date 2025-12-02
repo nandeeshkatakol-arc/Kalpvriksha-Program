@@ -1,5 +1,5 @@
-#ifndef APP_H
-#define APP_H
+#ifndef ODIPLAYERANALYZER_H
+#define ODIPLAYERANALYZER_H
 
 #include "Players_data.h"
 
