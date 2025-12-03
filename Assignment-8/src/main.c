@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "LRUcache.h"
+#include "lruCache.h"
 
 int main(void)
 {

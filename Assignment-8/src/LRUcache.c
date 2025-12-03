@@ -1,4 +1,4 @@
-#include "LRUcache.h"
+#include "lruCache.h"
 
 static int computeHashIndex(const int key, const int hashSize)
 {
